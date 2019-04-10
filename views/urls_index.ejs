@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <title>TinyApp</title>
+</head>
+<body style="font-size:20px; padding:50px;">
+    <!-- Add EJS code here -->
+
+    <h1>TinyApp!</h1>
+
+    <header>
+        <% include ./partials/_header %>
+    </header>
+
+  <br>
+    <h3><a href='/urls/new'>Create New TinyUrl</a></h3>
+  <br>
+    <h2>My URLs:</h2>
+  <ul>
+
+          <% for (var url in urls) { %>
+            <li><b>Original url:</b>
+            <%= urls[url] %> |
+            <b>TinyUrl:</b>
+            <%= url %> |
+
+            <a href='/urls/<%= url %>'>Edit you Url</a> |
+
+            <form method="POST" action="/urls/<%= url %>/delete" style="display: inline">
+              <button>Delete you TinyUrl</button>
+            </form>
+            </li>
+            <br>
+          <% }; %>
+
+  </ul>
+  <br>
+
+
+</body>
+</html>
