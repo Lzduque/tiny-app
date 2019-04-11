@@ -2,15 +2,15 @@
 
 <title>TinyApp</title>
 <% if (typeof(user_id) === 'undefined') { %>
-  <a href='/login'>Sign in Now!</a>
+<a href='/login'>Login</a> |
 <% } else { %>
-
-  <p>User logged in now: <%= user_email %></p>
-  <form method='POST' action='/logout' name='<%= user_id %>'>
-  <button>Sign out!</button>
-  </form>
-  <% } %>
-  <a href='/register'>Register Now!</a>
+<a href='/urls'>URLs</a> |
+<a href='/urls/new'>Create New TinyUrl</a>
+<p>Logged in now as: <%= user_email %></p>
+<form method='POST' action='/logout' name='<%= user_id %>'>
+  <button>Logout</button>
+</form>
+<% } %>
 
 <br>
 

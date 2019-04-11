@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt'); // to encrypt code
 app.use(bodyParser.urlencoded({extended: true})); //
 app.use(cookieParser('You should be fine')); // that should be before the other app.use call --> 'You should be fine': that is your signature for the signed cookies!
 
-//setting the username to be a cookie so all views can acess it
+//setting the variables like user_id to be a cookie so all views can acess it
 app.use(function(req, res, next) {
   // console.log('Request: ', req.url);
   // console.log('Headers: ', req.headers);
@@ -184,7 +184,6 @@ app.get('/register', (req, res) => {
 
 //registering!
 app.post('/register', (req, res, next) => {
-  const username = req.cookies.userName;
   const email = req.body.email;
   const password = req.body.password;
   const idNum = (randomString(6, '0123456789').toString());
