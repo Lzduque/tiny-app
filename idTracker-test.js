@@ -12,10 +12,10 @@ const userDB = {
 };
 
 
-function idTracker(userEmail) {
+function tracker(newElem,elem = 'email') {
   let result = undefined;
   for (let user in userDB) {
-    if (userDB[user].email === userEmail) {
+    if (userDB[user].elem === element) {
       result = user;
       console.log('user analized: ',user);
     }
@@ -23,6 +23,5 @@ function idTracker(userEmail) {
   }
   return result;
 }
-
 
 const userId = idTracker('user2@example.com');

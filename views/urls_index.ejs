@@ -22,21 +22,18 @@
   <br>
     <h2>My URLs:</h2>
   <ul>
-
-          <% for (var url in urls) { %>
-            <li><b>Original url:</b>
-            <%= urls[url] %> |
-            <b>TinyUrl:</b>
-            <%= url %> |
-
-            <a href='/urls/<%= url %>'>Edit you Url</a> |
-
-            <form method="POST" action="/urls/<%= url %>/delete" style="display: inline">
-              <button>Delete you TinyUrl</button>
-            </form>
-            </li>
-            <br>
-          <% }; %>
+      <% for (var url in urls) { %>
+        <li><b>Original url:</b>
+        <%= urls[url].longURL %> |
+        <b>TinyUrl:</b>
+        <%= url %> |
+        <a href='/urls/<%= url %>'>Edit you Url</a> |
+        <form method="POST" action="/urls/<%= url %>/delete" style="display: inline">
+          <button>Delete you TinyUrl</button>
+        </form>
+        </li>
+        <br>
+      <% }; %>
 
   </ul>
   <br>

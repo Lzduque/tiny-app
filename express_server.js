@@ -23,8 +23,10 @@ app.set('view engine', 'ejs'); //
 
 // global varaibles
 const urlDB = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  'b6UJxQ': { longURL: 'https://www.tsn.ca', userID: 'userRandomID' },
+  'rhUTxQ': { longURL: 'https://www.hotmail.ca', userID: 'userRandomID' },
+  'i3BoGr': { longURL: 'https://www.google.ca', userID: 'user2RandomID' },
+  'i3erGr': { longURL: 'https://www.google.com', userID: 'user2RandomID' }
 };
 
 const userDB = {
@@ -51,45 +53,88 @@ function randomString(length, chars) {
 }
 
 // search for a id/email inside DataBase - result is going to be undefined if does not find what it is looking for!
-function tracker(element) {
+function tracker(newElem) {
   let result = undefined;
   for (let user in userDB) {
-    if (userDB[user].email === element) {
+    if (userDB[user].email === newElem) {
       result = user;
       console.log('user analized: ',user);
     }
-    console.log('result is: ', result);
+    console.log('result is tracker: ', result);
   }
   return result;
 }
 
+// search for a url with the email inside DataBase - result is going to be undefined if does not find what it is looking for!
+function findShortUrl(id) {
+  let result = undefined;
+  for (let url in urlDB) {
+    if (urlDB[url].userID === id) {
+      result = url;
+    }
+  }
+  return result;
+  console.log('result findShortUrl: ',result);
+}
+
+function urlsForUser(DataBase,userId) {
+  const urlsOfUser = {};
+  for (let shortUrl in DataBase) {
+    if (urlDB[shortUrl].userID === userId) {
+      urlsOfUser[shortUrl] = urlDB[shortUrl];
+    }
+  }
+  console.log('obj with the users',urlsOfUser);
+  return urlsOfUser;
+}
+
+
+
+
 
 // requests
-app.get('/', (req, res) => {
-  res.send('Hello!');
-});
+// app.get('/', (req, res) => {
+//   res.send('Hello!');
+// });
 
 app.get('/urls.json', (req, res) => {
   res.json(urlDB);
 });
 
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
+// app.get('/hello', (req, res) => {
+//   res.send('<html><body>Hello <b>World</b></body></html>\n');
+// });
+
+// generating main page urls
+app.get('/urls', (req, res) => {
+  const userId = req.cookies.user_id;
+  const userEmail = req.cookies.user_email;
+  console.log('userId: ', userId);
+  console.log('type of userId: ', typeof(userId));
+  if (typeof(userId) === 'undefined') {
+    res.redirect('/login');
+  } else {
+    const shortURL = findShortUrl(req.cookies.user_id);
+    console.log('shorturl of the user',shortURL);
+    const templateVars = {
+      'urls': urlsForUser(urlDB,userId),
+      'user_id': userId,
+      'user_email': userEmail,
+    };
+  res.render('urls_index', templateVars);
+  }
 });
 
-app.get('/urls', (req, res) => {
-  const templateVars = {
-    urls: urlDB,
-    user_id: req.cookies.user_id,
-    user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
-  };
-
-  res.render('urls_index', templateVars);
+//posting the form and redirecting to new url
+app.post('/urls', (req, res) => {
+  const newTinyUrl = randomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+  urlDB[newTinyUrl] = { 'longURL': req.body.longURL, 'userID': req.cookies.user_id}; // creating a new key in urlData and storing the long url info
+  res.redirect(`/urls/${newTinyUrl}`);
 });
 
 app.get('/urls/new', (req, res) => {
   const templateVars = { user_id: req.cookies.user_id,
-    user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+                          user_email: req.cookies.user_email, // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
  };
 
   if (req.cookies.user_id) {
@@ -99,19 +144,12 @@ app.get('/urls/new', (req, res) => {
   }
 });
 
-//posting the form and redirecting to new url
-app.post('/urls', (req, res) => {
-  const newTinyUrl = randomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-  urlDB[newTinyUrl] = req.body.longURL; // creating a new key in urlData and storing the long url info
-  res.redirect(`/urls/${newTinyUrl}`);
-});
-
 //showing the page short url
 app.get('/urls/:shortURL', (req, res) => { // if :shortURL === :b2xVn2
   //ned to do something about short urls that are called but dont exist!
   const shortURL = req.params.shortURL; // req.params. its a given property you can acess
   const templateVars = { shortURL: req.params.shortURL, //then req.params.shortURL === b2xVn2
-                        longURL: urlDB[shortURL],
+                        longURL: urlDB[shortURL].longURL,
                         user_id: req.cookies.user_id,
                         user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
                       };
@@ -132,11 +170,11 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect('/urls');
 });
 
-//update LongURL and redirecting to new index page
+//update longURL and redirecting to new index page
 app.post('/urls/:shortURL/edit', (req, res) => {
   const tinyUrl = req.params.shortURL;
-  const newLongURL = req.body.newURL;
-  urlDB[tinyUrl] = newLongURL;
+  const newlongURL = req.body.newURL;
+  urlDB[tinyUrl].longURL = newlongURL;
   res.redirect('/urls');
 });
 
@@ -151,9 +189,9 @@ app.get('/login', (req, res, next) => {
 app.post('/login', (req, res, next) => {
   const userEmail = req.body.user_email;
   const password = req.body.password;
-  const userId = tracker(userEmail);
+  const userId = tracker(userEmail,'email');
 
-  if (tracker(userEmail) === undefined) {
+  if (tracker(userEmail,'email') === undefined) {
     const error = new Error('id does not exist!');
     error.httpStatusCode = 403;
     return next(error);
@@ -169,6 +207,9 @@ app.post('/login', (req, res, next) => {
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
   }
+  res.cookie('user_id', userId);
+  res.cookie('user_email', userDB.idNum.email);
+  res.redirect('/urls');
 });
 
 //log out
@@ -204,7 +245,7 @@ app.post('/register', (req, res, next) => {
     error.httpStatusCode = 400;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
-  } else if (tracker(email) !== undefined) {
+  } else if (tracker(email,'email') !== undefined) {
     let error = new Error('Email already registered!');
     error.httpStatusCode = 400;
     return next(error);
