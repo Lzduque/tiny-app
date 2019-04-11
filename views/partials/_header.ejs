@@ -1,18 +1,19 @@
 <!-- views/partials/header.ejs -->
 
 <title>TinyApp</title>
-<% if (username) { %>
-  <p>User logged in now: <%= username %></p>
-  <form method="POST" action="/logout" name="<%= username %>">
-  <button>Sign out!</button>
-  </form>
-
-<% } else { %>
-  <form method="POST" action="/login">
-    <input name="username" placeholder="User name">
+<% if (typeof(user_id) === 'undefined') { %>
+  <form method='POST' action='/login'>
+    <input name='user_id' placeholder='User email'>
     <button>Sign in!</button>
   </form>
-<% } %>
+<% } else { %>
 
-
+  <p>User logged in now: <%= user_email %></p>
+  <form method='POST' action='/logout' name='<%= user_id %>'>
+  <button>Sign out!</button>
+  </form>
+  <% } %>
 <br>
+
+
+

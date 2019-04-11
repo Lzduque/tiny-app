@@ -3,7 +3,7 @@ const cookieParser = require('cookie-parser'); //
 const app = express(); //
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser'); // to make the post method work!
-const bcrypt = require("bcrypt"); // to encrypt code
+const bcrypt = require('bcrypt'); // to encrypt code
 
 app.use(bodyParser.urlencoded({extended: true})); //
 app.use(cookieParser('You should be fine')); // that should be before the other app.use call --> 'You should be fine': that is your signature for the signed cookies!
@@ -28,15 +28,15 @@ const urlDB = {
 };
 
 const userDB = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+  'userRandomID': {
+    id: 'userRandomID',
+    email: 'user@example.com',
+    password: 'purple-monkey-dinosaur'
   },
- "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
+ 'user2RandomID': {
+    id: 'user2RandomID',
+    email: 'user2@example.com',
+    password: 'dishwasher-funk'
   }
 };
 
@@ -81,17 +81,18 @@ app.get('/hello', (req, res) => {
 app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDB,
-    username: req.cookies.userName // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+    user_id: req.cookies.user_id,
+    user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
   };
 
   res.render('urls_index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
-  const cookies = {
-    username: req.cookies.userName
-  };
-  res.render('urls_new', cookies);
+  const templateVars = { user_id: req.cookies.user_id,
+    user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+ };
+  res.render('urls_new', templateVars);
 });
 
 //posting the form and redirecting to new url
@@ -107,7 +108,8 @@ app.get('/urls/:shortURL', (req, res) => { // if :shortURL === :b2xVn2
   const shortURL = req.params.shortURL; // req.params. its a given property you can acess
   const templateVars = { shortURL: req.params.shortURL, //then req.params.shortURL === b2xVn2
                         longURL: urlDB[shortURL],
-                        username: req.cookies.userName // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+                        user_id: req.cookies.user_id,
+                        user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
                       };
   res.render('urls_show', templateVars);
 });
@@ -150,8 +152,9 @@ app.post('/logout', (req, res) => {
 
 //register page!
 app.get('/register', (req, res) => {
-  const templateVars = { username: req.cookies.userName }; // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
-  // console.log('userDB when it loads: ',userDB);
+  const templateVars = { user_id: req.cookies.user_id,
+    user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+ };
   res.render('urls_register', templateVars);
 });
 
@@ -162,8 +165,6 @@ app.post('/register', (req, res, next) => {
   const password = req.body.password;
   const idNum = (randomString(6, '0123456789').toString());
   const userId = {'id': idNum, 'email': email, 'password': password};
-
-  console.log('email Tracker comparison: ',emailTracker(email) === true);
 
   if (!email) {
     const error = new Error('missing id');
@@ -180,7 +181,7 @@ app.post('/register', (req, res, next) => {
   }
 
   if (emailTracker(email) === true) {
-    const error = new Error('Email already registered!');
+    let error = new Error('Email already registered!');
     error.httpStatusCode = 400;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
@@ -191,6 +192,7 @@ app.post('/register', (req, res, next) => {
   console.log('Cookies after creating cookie id: ', req.cookies);
 
   res.cookie('user_id', userDB.idNum.id);
+  res.cookie('user_email', userDB.idNum.email);
   res.redirect('/urls');
 });
 
