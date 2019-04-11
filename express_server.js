@@ -167,7 +167,7 @@ app.post('/login', (req, res, next) => {
   res.cookie('user_email', userEmail);
   res.redirect('/urls');
 }
-);
+});
 
 //log out
 app.post('/logout', (req, res) => {
