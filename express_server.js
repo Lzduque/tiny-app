@@ -63,6 +63,19 @@ function emailTracker(newEmail) {
   return result;
 }
 
+// search for a id if a email
+function idTracker(userEmail) {
+  let result = undefined;
+  for (let user in userDB) {
+    if (userDB[user].email === userEmail) {
+      result = user;
+      console.log('user analized: ',user);
+    }
+    console.log('result is: ', result);
+  }
+  return result;
+}
+
 
 
 // requests
@@ -137,15 +150,29 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 });
 
 //log in
-app.post('/login', (req, res) => {
-  const userName = req.body.username;
+app.post('/login', (req, res, next) => {
+  const userEmail = req.body.user_email;
+  const password = req.body.password;
+  const userId = idTracker(userEmail);
+
+  if (idTracker(userEmail) === undefined) {
+    const error = new Error('id does not exist!');
+    error.httpStatusCode = 400;
+    return next(error);
+    res.sendStatus(err.httpStatusCode).json(err);
+  } else {
+
   console.log('Cookies :  ', req.cookies);
-  res.cookie('userName', userName).redirect('/urls');
-});
+  res.cookie('user_id', userId);
+  res.cookie('user_email', userEmail);
+  res.redirect('/urls');
+}
+);
 
 //log out
 app.post('/logout', (req, res) => {
-  res.clearCookie('userName');
+  res.clearCookie('user_id');
+  res.clearCookie('user_email');
   console.log('Cookies :  ', req.cookies);
   res.redirect('/urls');
 });
@@ -171,21 +198,17 @@ app.post('/register', (req, res, next) => {
     error.httpStatusCode = 400;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
-  }
-
-  if (!password) {
+  } else if (!password) {
     const error = new Error('missing id');
     error.httpStatusCode = 400;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
-  }
-
-  if (emailTracker(email) === true) {
+  } else if (emailTracker(email) === true) {
     let error = new Error('Email already registered!');
     error.httpStatusCode = 400;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
-  }
+  } else {
 
   userDB.idNum = userId;
   // cookieParser.JSONCookie(id);
@@ -194,6 +217,7 @@ app.post('/register', (req, res, next) => {
   res.cookie('user_id', userDB.idNum.id);
   res.cookie('user_email', userDB.idNum.email);
   res.redirect('/urls');
+}
 });
 
 // just listening

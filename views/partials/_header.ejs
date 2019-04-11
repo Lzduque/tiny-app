@@ -2,9 +2,13 @@
 
 <title>TinyApp</title>
 <% if (typeof(user_id) === 'undefined') { %>
-  <form method='POST' action='/login'>
-    <input name='user_id' placeholder='User email'>
-    <button>Sign in!</button>
+  <form class='form-inline' action='/login' method='POST'>
+   <label for='newURL'>Enter your e-mail:</label>&nbsp; &nbsp;
+    <input type='email' name='user_email'>&nbsp; &nbsp;
+    <label for='newURL'>Enter a password:  </label>&nbsp; &nbsp;
+    <input type='password' name='password'>&nbsp; &nbsp;
+    <button type='submit' class='btn btn-primary'>Sign in!
+    </button>
   </form>
 <% } else { %>
 
