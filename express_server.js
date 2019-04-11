@@ -150,6 +150,13 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 });
 
 //log in
+app.get('/login', (req, res, next) => {
+  // res.cookie('user_id', '');
+  // res.cookie('user_email', '');
+  res.render('urls_login');
+});
+
+//log in
 app.post('/login', (req, res, next) => {
   const userEmail = req.body.user_email;
   const password = req.body.password;
