@@ -150,16 +150,20 @@ app.post('/login', (req, res, next) => {
 
   if (tracker(userEmail) === undefined) {
     const error = new Error('id does not exist!');
-    error.httpStatusCode = 400;
+    error.httpStatusCode = 403;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
+  } else if (password === userDB[userId].password) {
+    console.log('Cookies :  ', req.cookies);
+    res.cookie('user_id', userId);
+    res.cookie('user_email', userEmail);
+    res.redirect('/urls');
   } else {
-
-  console.log('Cookies :  ', req.cookies);
-  res.cookie('user_id', userId);
-  res.cookie('user_email', userEmail);
-  res.redirect('/urls');
-}
+    const error = new Error('password does not match!');
+    error.httpStatusCode = 403;
+    return next(error);
+    res.sendStatus(err.httpStatusCode).json(err);
+  }
 });
 
 //log out
