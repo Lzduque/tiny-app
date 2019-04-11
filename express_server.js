@@ -111,7 +111,7 @@ app.post('/logout', (req, res) => {
 //register page!
 app.get('/register', (req, res) => {
   let templateVars = { username: req.cookies.userName };
-  console.log('users when it loads: ',users);
+  // console.log('users when it loads: ',users);
   res.render('urls_register', templateVars);
 });
 
@@ -123,6 +123,7 @@ app.post('/register', (req, res) => {
   const newId = Object.keys(users).length + 1;
   const id = {'id': newId, 'email': email, 'password': password};
   users[newId] = id;
+  res.cookie('user_id', newId);
   res.redirect('/urls');
 });
 
