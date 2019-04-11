@@ -120,7 +120,7 @@ app.post('/register', (req, res) => {
   let templateVars = { username: req.cookies.userName };
   const email = req.body.email;
   const password = req.body.password;
-  const newId = Object.keys(users).length + 1;
+  const newId = randomString(6, '0123456789');
   const id = {'id': newId, 'email': email, 'password': password};
   users[newId] = id;
   res.cookie('user_id', newId);
