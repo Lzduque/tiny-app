@@ -50,24 +50,11 @@ function randomString(length, chars) {
   // const result = Math.random().toString().substr(length,length); // creates a random number of 6
 }
 
-// email tracker - check if there is already an email registered!
-function emailTracker(newEmail) {
-  let result = false;
-  for (let user in userDB) {
-    if (userDB[user].email === newEmail) {
-      result = true;
-      console.log('user analized: ',user);
-    }
-    console.log('result is: ', result);
-  }
-  return result;
-}
-
-// search for a id if a email
-function idTracker(userEmail) {
+// search for a id/email inside DataBase - result is going to be undefined if does not find what it is looking for!
+function tracker(element) {
   let result = undefined;
   for (let user in userDB) {
-    if (userDB[user].email === userEmail) {
+    if (userDB[user].email === element) {
       result = user;
       console.log('user analized: ',user);
     }
@@ -75,7 +62,6 @@ function idTracker(userEmail) {
   }
   return result;
 }
-
 
 
 // requests
@@ -160,9 +146,9 @@ app.get('/login', (req, res, next) => {
 app.post('/login', (req, res, next) => {
   const userEmail = req.body.user_email;
   const password = req.body.password;
-  const userId = idTracker(userEmail);
+  const userId = tracker(userEmail);
 
-  if (idTracker(userEmail) === undefined) {
+  if (tracker(userEmail) === undefined) {
     const error = new Error('id does not exist!');
     error.httpStatusCode = 400;
     return next(error);
@@ -210,7 +196,7 @@ app.post('/register', (req, res, next) => {
     error.httpStatusCode = 400;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
-  } else if (emailTracker(email) === true) {
+  } else if (tracker(email) !== undefined) {
     let error = new Error('Email already registered!');
     error.httpStatusCode = 400;
     return next(error);
