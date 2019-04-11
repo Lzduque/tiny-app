@@ -91,7 +91,12 @@ app.get('/urls/new', (req, res) => {
   const templateVars = { user_id: req.cookies.user_id,
     user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
  };
-  res.render('urls_new', templateVars);
+
+  if (req.cookies.user_id) {
+    res.render('urls_new', templateVars);
+  } else {
+    res.redirect('/login');
+  }
 });
 
 //posting the form and redirecting to new url
