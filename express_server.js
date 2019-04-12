@@ -1,19 +1,20 @@
+// Whole-script strict mode syntax
+'use strict';
+
 const express = require('express'); //
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const app = express(); //
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser'); // to make the post method work!
 const bcrypt = require('bcrypt'); // to encrypt code
 
 app.use(bodyParser.urlencoded({extended: true})); //
-// app.use(cookieParser('You should be fine')); // that should be before the other app.use call --> 'You should be fine': that is your signature for the signed cookies!
 app.use(cookieSession({
   name: 'session',
   keys: ['You should be fine'],
-
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+}));
 
 //setting the variables like user_id to be a cookie so all views can acess it
 app.use(function(req, res, next) {
@@ -61,7 +62,7 @@ function randomString(length, chars) {
 
 // search for a id/email inside DataBase - result is going to be undefined if does not find what it is looking for!
 function tracker(newElem) {
-  let result = undefined;
+  let result;
   for (let user in userDB) {
     if (userDB[user].email === newElem) {
       result = user;
@@ -72,7 +73,7 @@ function tracker(newElem) {
 
 // search for a url with the email inside DataBase - result is going to be undefined if does not find what it is looking for!
 function findShortUrl(id) {
-  let result = undefined;
+  let result;
   for (let url in urlDB) {
     if (urlDB[url].userID === id) {
       result = url;
@@ -94,7 +95,7 @@ function urlsForUser(DataBase,userId) {
 function hasher(password) {
   const hashedPassword = bcrypt.hashSync(password, 10);
   return hashedPassword;
-};
+}
 
 
 ///////////////////ROUTER///////////////////
@@ -112,18 +113,11 @@ app.get('/', (req, res) => {
 });
 
 
-// // render JSON
-// app.get('/urls.json', (req, res) => {
-//   res.json(urlDB);
-// });
-
-
 // generating main page urls
 app.get('/urls', (req, res, next) => {
   const userId = req.session.user_id;
   const userEmail = req.session.user_email;
   if (userId === undefined) {
-    // res.redirect('/login');
     res.status(401).send('You are not logged in!');
   } else {
     const shortURL = findShortUrl(req.session.user_id);
@@ -140,16 +134,17 @@ app.get('/urls', (req, res, next) => {
 //posting the form and redirecting to new url
 app.post('/urls', (req, res) => {
   const newTinyUrl = randomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-  urlDB[newTinyUrl] = { 'longURL': req.body.longURL, 'userID': req.session.user_id}; // creating a new key in urlData and storing the long url info
+  urlDB[newTinyUrl] = { 'longURL': req.body.longURL,
+                        'userID': req.session.user_id};
   res.redirect(`/urls/${newTinyUrl}`);
 });
 
 
 // create a new tiny url!
 app.get('/urls/new', (req, res) => {
-  const templateVars = { user_id: req.session.user_id,
-                          user_email: req.session.user_email, // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
- };
+  const templateVars = { 'user_id': req.session.user_id,
+                         'user_email': req.session.user_email,
+                       };
 
   if (req.session.user_id) {
     res.render('urls_new', templateVars);
@@ -163,21 +158,21 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:shortURL', (req, res, next) => {
   const user_id = req.session.user_id;
   const user_email = req.session.user_email;
-  const shortURL = req.params.shortURL; // req.params. its a given property you can acess
+  const shortURL = req.params.shortURL;
   if (!urlDB[shortURL]) {
     // if that tiny url does not exist in the database
     res.status(400).send('TinyUrl does not exist!');
   } else if (user_id === urlDB[shortURL].userID) {
     // if the user is logged in and the url belongs to it
-    const templateVars = { shortURL: req.params.shortURL, //then req.params.shortURL === b2xVn2
-                          longURL: urlDB[shortURL].longURL,
-                          'user_id': user_id,
-                          'user_email': user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
-                        };
+    const templateVars = { shortURL: req.params.shortURL,
+                           longURL: urlDB[shortURL].longURL,
+                           'user_id': user_id,
+                           'user_email': user_email
+                         };
     res.render('urls_show', templateVars);
-  } else if (!user_id) { // if user is not loggedin
+  } else if (!user_id) {
     res.status(401).send('User is not loggedin!');
-  } else {    // if that tiny url exist in the database, but does not belong to the user
+  } else {
     res.status(401).send('TinyUrl does not belong to you!');
   }
 });
@@ -203,34 +198,31 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   } else if (userId !== urlDB[newTinyUrl].userID) {
     res.status(401).send('TinyUrl does not belong to you!');
   } else {
-    delete urlDB[newTinyUrl]; // deleting a existing key in urlData
+    delete urlDB[newTinyUrl];
     res.redirect('/urls');
   }
 });
+
 
 //update longURL and redirecting to new index page
 app.post('/urls/:shortURL', (req, res) => {
   const tinyUrl = req.params.shortURL;
   const newlongURL = req.body.newURL;
   const userId = req.session.user_id;
-  console.log('userId', userId);
-  console.log('req.session.user_id', req.session.user_id);
 
   if (userId === undefined) {
     res.status(401).send('User is not loggedin!');
   } else if (userId !== urlDB[tinyUrl].userID) {
     res.status(401).send('TinyUrl does not belong to you!');
   } else {
-  urlDB[tinyUrl].longURL = newlongURL;
-  res.redirect('/urls');
-}
+    urlDB[tinyUrl].longURL = newlongURL;
+    res.redirect('/urls');
+  }
 });
 
 
 //log in
 app.get('/login', (req, res, next) => {
-  // res.cookie.user_id = ;
-  // res.cookie.user_email =;
   if ((req.session.user_id) === undefined) {
     res.render('urls_login');
   } else {
@@ -239,7 +231,7 @@ app.get('/login', (req, res, next) => {
 });
 
 
-//log in
+//log in and send the form
 app.post('/login', (req, res, next) => {
   if ((req.session.user_id) === undefined) {
     const userEmail = req.body.user_email;
@@ -256,13 +248,14 @@ app.post('/login', (req, res, next) => {
     } else {
       res.status(403).send('password does not match!');
     }
+
     req.session.user_id = userId;
     req.session.user_email = userDB.idNum.email;
     res.redirect('/urls');
   } else {
     res.redirect('/urls');
   }
-  });
+});
 
 
 //log out
