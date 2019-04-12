@@ -1,18 +1,25 @@
 const express = require('express'); //
-const cookieParser = require('cookie-parser'); //
+const cookieSession = require('cookie-session')
 const app = express(); //
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser'); // to make the post method work!
 const bcrypt = require('bcrypt'); // to encrypt code
 
 app.use(bodyParser.urlencoded({extended: true})); //
-app.use(cookieParser('You should be fine')); // that should be before the other app.use call --> 'You should be fine': that is your signature for the signed cookies!
+// app.use(cookieParser('You should be fine')); // that should be before the other app.use call --> 'You should be fine': that is your signature for the signed cookies!
+app.use(cookieSession({
+  name: 'session',
+  keys: ['You should be fine'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 //setting the variables like user_id to be a cookie so all views can acess it
 app.use(function(req, res, next) {
   // console.log('Request: ', req.url);
   // console.log('Headers: ', req.headers);
-  console.log('Cookies: ', req.cookies);
+  console.log('Cookies: ', req.session);
   console.log('Signed: ', req.signedCookies);
   next();
 });
@@ -111,14 +118,14 @@ app.get('/urls.json', (req, res) => {
 
 // generating main page urls
 app.get('/urls', (req, res) => {
-  const userId = req.cookies.user_id;
-  const userEmail = req.cookies.user_email;
+  const userId = req.session.user_id;
+  const userEmail = req.session.user_email;
   console.log('userId: ', userId);
   console.log('type of userId: ', typeof(userId));
   if (typeof(userId) === 'undefined') {
     res.redirect('/login');
   } else {
-    const shortURL = findShortUrl(req.cookies.user_id);
+    const shortURL = findShortUrl(req.session.user_id);
     console.log('shorturl of the user',shortURL);
     const templateVars = {
       'urls': urlsForUser(urlDB,userId),
@@ -132,16 +139,16 @@ app.get('/urls', (req, res) => {
 //posting the form and redirecting to new url
 app.post('/urls', (req, res) => {
   const newTinyUrl = randomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-  urlDB[newTinyUrl] = { 'longURL': req.body.longURL, 'userID': req.cookies.user_id}; // creating a new key in urlData and storing the long url info
+  urlDB[newTinyUrl] = { 'longURL': req.body.longURL, 'userID': req.session.user_id}; // creating a new key in urlData and storing the long url info
   res.redirect(`/urls/${newTinyUrl}`);
 });
 
 app.get('/urls/new', (req, res) => {
-  const templateVars = { user_id: req.cookies.user_id,
-                          user_email: req.cookies.user_email, // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+  const templateVars = { user_id: req.session.user_id,
+                          user_email: req.session.user_email, // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
  };
 
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     res.render('urls_new', templateVars);
   } else {
     res.redirect('/login');
@@ -150,8 +157,8 @@ app.get('/urls/new', (req, res) => {
 
 //showing the page short url
 app.get('/urls/:shortURL', (req, res) => { // if :shortURL === :b2xVn2
-  const user_id = req.cookies.user_id;
-  const user_email = req.cookies.user_email;
+  const user_id = req.session.user_id;
+  const user_email = req.session.user_email;
   const shortURL = req.params.shortURL; // req.params. its a given property you can acess
   // if user id is not equal the user id referent of the short url, redirect to urls
   if (user_id === urlDB[shortURL].userID) {
@@ -183,7 +190,7 @@ app.get('/u/:shortURL', (req, res) => {
 //delete TinyUrl and redirecting to new index page
 app.post('/urls/:shortURL/delete', (req, res) => {
   const newTinyUrl = req.params.shortURL;
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   if (typeof(userId) === 'undefined') {
     res.redirect('/login');
   } else {
@@ -196,7 +203,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/urls/:shortURL/edit', (req, res) => {
   const tinyUrl = req.params.shortURL;
   const newlongURL = req.body.newURL;
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   if (typeof(userId) === 'undefined') {
     res.redirect('/login');
   } else {
@@ -207,8 +214,8 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 
 //log in
 app.get('/login', (req, res, next) => {
-  // res.cookie('user_id', '');
-  // res.cookie('user_email', '');
+  // res.cookie.user_id = ;
+  // res.cookie.user_email =;
   res.render('urls_login');
 });
 
@@ -218,10 +225,6 @@ app.post('/login', (req, res, next) => {
   const password = req.body.password;
   const userId = tracker(userEmail,'email');
   const hashedPassword = userDB[userId]['password'];
-  // res.cookie('hashed password', hashedPassword);
-  // res.cookie('password', password);
-  // res.cookie('has password', hasher(password));
-
 
   if (tracker(userEmail,'email') === undefined) {
     const error = new Error('id does not exist!');
@@ -229,9 +232,9 @@ app.post('/login', (req, res, next) => {
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
   } else if (bcrypt.compareSync(password, hashedPassword)) {
-    console.log('Cookies :  ', req.cookies);
-    res.cookie('user_id', userId);
-    res.cookie('user_email', userEmail);
+    console.log('Cookies :  ', req.session);
+    req.session.user_id = userId;
+    req.session.user_email = userEmail;
     res.redirect('/urls');
   } else {
     const error = new Error('password does not match!');
@@ -239,23 +242,22 @@ app.post('/login', (req, res, next) => {
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
   }
-  res.cookie('user_id', userId);
-  res.cookie('user_email', userDB.idNum.email);
+  req.session.user_id = userId;
+  req.session.user_email = userDB.idNum.email;
   res.redirect('/urls');
 });
 
 //log out
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
-  res.clearCookie('user_email');
-  console.log('Cookies :  ', req.cookies);
+  req.session = null
+  console.log('Cookies :  ', req.session);
   res.redirect('/urls');
 });
 
 //register page!
 app.get('/register', (req, res) => {
-  const templateVars = { user_id: req.cookies.user_id,
-    user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+  const templateVars = { user_id: req.session.user_id,
+    user_email: req.session.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
  };
   res.render('urls_register', templateVars);
 });
@@ -287,10 +289,10 @@ app.post('/register', (req, res, next) => {
 
   userDB.idNum = userId;
   // cookieParser.JSONCookie(id);
-  console.log('Cookies after creating cookie id: ', req.cookies);
+  console.log('Cookies after creating cookie id: ', req.session);
 
-  res.cookie('user_id', userDB.idNum.id);
-  res.cookie('user_email', userDB.idNum.email);
+  req.session.user_id = userDB.idNum.id;
+  req.session.user_email = userDB.idNum.email;
   res.redirect('/urls');
 }
 });
