@@ -24,8 +24,8 @@ app.set('view engine', 'ejs'); //
 // global varaibles
 const urlDB = {
   'b6UJxQ': { longURL: 'https://www.tsn.ca', userID: 'userRandomID' },
-  'rhUTxQ': { longURL: 'https://www.hotmail.ca', userID: 'userRandomID' },
-  'i3BoGr': { longURL: 'https://www.google.ca', userID: 'user2RandomID' },
+  'rhUTuT': { longURL: 'https://www.hotmail.ca', userID: 'userRandomID' },
+  'a5BoGr': { longURL: 'https://www.google.ca', userID: 'user2RandomID' },
   'i3erGr': { longURL: 'https://www.google.com', userID: 'user2RandomID' }
 };
 
@@ -166,8 +166,14 @@ app.get('/urls/:shortURL', (req, res) => { // if :shortURL === :b2xVn2
 //redirecting short urls
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = `/urls/${shortURL}`;
-  res.redirect(longURL);
+  const longUrl = urlDB[shortURL].longURL;
+  if (shortURL === 'undefined') {
+    const error = new Error('Page does not exist!');
+    error.httpStatusCode = 400;
+    return next(error);
+    res.sendStatus(err.httpStatusCode).json(err);
+  }
+  res.redirect(longUrl);
 });
 
 //delete TinyUrl and redirecting to new index page
