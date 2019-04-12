@@ -146,14 +146,21 @@ app.get('/urls/new', (req, res) => {
 
 //showing the page short url
 app.get('/urls/:shortURL', (req, res) => { // if :shortURL === :b2xVn2
-  //ned to do something about short urls that are called but dont exist!
+  const user_id = req.cookies.user_id;
+  const user_email = req.cookies.user_email;
   const shortURL = req.params.shortURL; // req.params. its a given property you can acess
-  const templateVars = { shortURL: req.params.shortURL, //then req.params.shortURL === b2xVn2
-                        longURL: urlDB[shortURL].longURL,
-                        user_id: req.cookies.user_id,
-                        user_email: req.cookies.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
-                      };
-  res.render('urls_show', templateVars);
+  // if user id is not equal the user id referent of the short url, redirect to urls
+  if (user_id === urlDB[shortURL].userID) {
+    const templateVars = { shortURL: req.params.shortURL, //then req.params.shortURL === b2xVn2
+                          longURL: urlDB[shortURL].longURL,
+                          'user_id': user_id,
+                          'user_email': user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
+                        };
+    res.render('urls_show', templateVars);
+  } else {
+    res.redirect('/urls');
+  }
+  // ----> need to do something about short urls that are called but dont exist!
 });
 
 //redirecting short urls
