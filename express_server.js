@@ -173,16 +173,26 @@ app.get('/u/:shortURL', (req, res) => {
 //delete TinyUrl and redirecting to new index page
 app.post('/urls/:shortURL/delete', (req, res) => {
   const newTinyUrl = req.params.shortURL;
+  const userId = req.cookies.user_id;
+  if (typeof(userId) === 'undefined') {
+    res.redirect('/login');
+  } else {
   delete urlDB[newTinyUrl]; // deleting a existing key in urlData
   res.redirect('/urls');
+}
 });
 
 //update longURL and redirecting to new index page
 app.post('/urls/:shortURL/edit', (req, res) => {
   const tinyUrl = req.params.shortURL;
   const newlongURL = req.body.newURL;
+  const userId = req.cookies.user_id;
+  if (typeof(userId) === 'undefined') {
+    res.redirect('/login');
+  } else {
   urlDB[tinyUrl].longURL = newlongURL;
   res.redirect('/urls');
+}
 });
 
 //log in
