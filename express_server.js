@@ -104,26 +104,37 @@ function hasher(password) {
 
 
 // requests
-// app.get('/', (req, res) => {
-//   res.send('Hello!');
-// });
-
-app.get('/urls.json', (req, res) => {
-  res.json(urlDB);
-});
-
-// app.get('/hello', (req, res) => {
-//   res.send('<html><body>Hello <b>World</b></body></html>\n');
-// });
-
-// generating main page urls
-app.get('/urls', (req, res) => {
+app.get('/', (req, res) => {
   const userId = req.session.user_id;
   const userEmail = req.session.user_email;
   console.log('userId: ', userId);
   console.log('type of userId: ', typeof(userId));
   if (typeof(userId) === 'undefined') {
     res.redirect('/login');
+  } else {
+    res.redirect('/urls');
+  }
+});
+
+
+// render JSON
+app.get('/urls.json', (req, res) => {
+  res.json(urlDB);
+});
+
+
+// generating main page urls
+app.get('/urls', (req, res, next) => {
+  const userId = req.session.user_id;
+  const userEmail = req.session.user_email;
+  console.log('userId: ', userId);
+  console.log('type of userId: ', typeof(userId));
+  if (typeof(userId) === 'undefined') {
+    // res.redirect('/login');
+    const error = new Error('You are not connected! Go to login first!');
+    error.httpStatusCode = 401;
+    return next(error);
+    res.sendStatus(err.httpStatusCode).json(err);
   } else {
     const shortURL = findShortUrl(req.session.user_id);
     console.log('shorturl of the user',shortURL);
@@ -136,6 +147,7 @@ app.get('/urls', (req, res) => {
   }
 });
 
+
 //posting the form and redirecting to new url
 app.post('/urls', (req, res) => {
   const newTinyUrl = randomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
@@ -143,6 +155,7 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${newTinyUrl}`);
 });
 
+// create a new tiny url!
 app.get('/urls/new', (req, res) => {
   const templateVars = { user_id: req.session.user_id,
                           user_email: req.session.user_email, // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
@@ -155,23 +168,37 @@ app.get('/urls/new', (req, res) => {
   }
 });
 
+
 //showing the page short url
-app.get('/urls/:shortURL', (req, res) => { // if :shortURL === :b2xVn2
+app.get('/urls/:shortURL', (req, res, next) => {
   const user_id = req.session.user_id;
   const user_email = req.session.user_email;
   const shortURL = req.params.shortURL; // req.params. its a given property you can acess
-  // if user id is not equal the user id referent of the short url, redirect to urls
-  if (user_id === urlDB[shortURL].userID) {
+  if (!urlDB[shortURL]) {
+    // if that tiny url does not exist in the database
+    const error = new Error('TinyUrl does not exist!');
+    error.httpStatusCode = 400;
+    return next(error);
+    res.sendStatus(err.httpStatusCode).json(err);
+  } else if (user_id === urlDB[shortURL].userID) {
+    // if the user is logged in and the url belongs to it
     const templateVars = { shortURL: req.params.shortURL, //then req.params.shortURL === b2xVn2
                           longURL: urlDB[shortURL].longURL,
                           'user_id': user_id,
                           'user_email': user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
                         };
     res.render('urls_show', templateVars);
-  } else {
-    res.redirect('/urls');
+  } else if (!user_id) { // if user is not loggedin
+    const error = new Error('User is not loggedin!');
+    error.httpStatusCode = 401;
+    return next(error);
+    res.sendStatus(err.httpStatusCode).json(err);
+    } else {    // if that tiny url exist in the database, but does not belong to the user
+    const error = new Error('TinyUrl does not belong to you!');
+    error.httpStatusCode = 401;
+    return next(error);
+    res.sendStatus(err.httpStatusCode).json(err);
   }
-  // ----> need to do something about short urls that are called but dont exist!
 });
 
 //redirecting short urls

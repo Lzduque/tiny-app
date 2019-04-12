@@ -16,11 +16,7 @@
     <header>
         <% include ./partials/_header %>
     </header>
-    <br>
-
-  <h3><a href='/urls/new'>Create New TinyUrl</a></h3>
-  <br>
-    <h3>TinyURL: <b><%= shortURL %></b></h3>
+    <h2>TinyURL: <b><%= shortURL %></b></h2>
 
     <form class="form-inline" action="/urls/<%= shortURL %>/edit" method="POST">
       <div class="form-group mb-2">
@@ -29,6 +25,8 @@
         <button>Upload you URL</button>
       </div>
     </form>
-
+    <br>
+      <h5><a href='/urls/new'>Create New TinyUrl</a></h5>
+    <br>
 </body>
 </html>

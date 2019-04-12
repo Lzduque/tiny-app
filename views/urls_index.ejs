@@ -17,9 +17,6 @@
         <% include ./partials/_header %>
     </header>
 
-  <br>
-    <h3><a href='/urls/new'>Create New TinyUrl</a></h3>
-  <br>
     <h2>My URLs:</h2>
   <ul>
       <% for (var url in urls) { %>
@@ -36,8 +33,9 @@
       <% }; %>
 
   </ul>
+    <h5><a href='/urls/new'>Create New TinyUrl</a></h5>
   <br>
-
+  <br>
 
 </body>
 </html>
