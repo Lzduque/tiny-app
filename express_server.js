@@ -188,7 +188,7 @@ app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longUrl = urlDB[shortURL].longURL;
   if (shortURL === 'undefined') {
-    res.status(400).send('TinyUrl does not belong to you!');
+    res.status(400).send('TinyUrl does not exist!');
   }
   res.redirect(longUrl);
 });
@@ -198,12 +198,14 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const newTinyUrl = req.params.shortURL;
   const userId = req.session.user_id;
-  if (typeof(userId) === 'undefined') {
-    res.redirect('/login');
+  if (userId === undefined) {
+    res.status(401).send('User is not loggedin!');
+  } else if (userId !== urlDB[newTinyUrl].userID) {
+    res.status(401).send('TinyUrl does not belong to you!');
   } else {
-  delete urlDB[newTinyUrl]; // deleting a existing key in urlData
-  res.redirect('/urls');
-}
+    delete urlDB[newTinyUrl]; // deleting a existing key in urlData
+    res.redirect('/urls');
+  }
 });
 
 //update longURL and redirecting to new index page
@@ -211,33 +213,42 @@ app.post('/urls/:shortURL', (req, res) => {
   const tinyUrl = req.params.shortURL;
   const newlongURL = req.body.newURL;
   const userId = req.session.user_id;
-  if (typeof(userId) === 'undefined') {
-    res.redirect('/login');
+  console.log('userId', userId);
+  console.log('req.session.user_id', req.session.user_id);
+
+  if (userId === undefined) {
+    res.status(401).send('User is not loggedin!');
+  } else if (userId !== urlDB[tinyUrl].userID) {
+    res.status(401).send('TinyUrl does not belong to you!');
   } else {
   urlDB[tinyUrl].longURL = newlongURL;
   res.redirect('/urls');
 }
 });
 
+
 //log in
 app.get('/login', (req, res, next) => {
   // res.cookie.user_id = ;
   // res.cookie.user_email =;
-  res.render('urls_login');
+  if ((req.session.user_id) === undefined) {
+    res.render('urls_login');
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 
 //log in
 app.post('/login', (req, res, next) => {
   if ((req.session.user_id) === undefined) {
-
     const userEmail = req.body.user_email;
     const password = req.body.password;
     const userId = tracker(userEmail);
     const hashedPassword = userDB[userId]['password'];
 
     if (tracker(userEmail) === undefined) {
-      res.status(403).send('id does not exist!');
+      res.status(403).send('email is not registered!');
     } else if (bcrypt.compareSync(password, hashedPassword)) {
       req.session.user_id = userId;
       req.session.user_email = userEmail;
@@ -283,7 +294,7 @@ app.post('/register', (req, res, next) => {
     res.status(400).send('missing id');
   } else if (!password) {
     res.status(400).send('missing password');
-  } else if (tracker(email,'email') !== undefined) {
+  } else if (tracker(email) !== undefined) {
     res.status(400).send('Email already registered');
   } else {
     userDB.idNum = userId;
