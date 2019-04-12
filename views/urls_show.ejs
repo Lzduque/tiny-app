@@ -18,15 +18,12 @@
     </header>
     <h2>TinyURL: <b><%= shortURL %></b></h2>
 
-    <form class="form-inline" action="/urls/<%= shortURL %>/edit" method="POST">
+    <form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
       <div class="form-group mb-2">
         <label for="newURL">Enter a NEW URL:</label>
         <input class="form-control" type="text" name="newURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em">
         <button>Upload you URL</button>
       </div>
     </form>
-    <br>
-      <h5><a href='/urls/new'>Create New TinyUrl</a></h5>
-    <br>
 </body>
 </html>

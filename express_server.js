@@ -17,8 +17,6 @@ app.use(cookieSession({
 
 //setting the variables like user_id to be a cookie so all views can acess it
 app.use(function(req, res, next) {
-  // console.log('Request: ', req.url);
-  // console.log('Headers: ', req.headers);
   console.log('Cookies: ', req.session);
   console.log('Signed: ', req.signedCookies);
   next();
@@ -26,6 +24,8 @@ app.use(function(req, res, next) {
 
 app.set('view engine', 'ejs'); //
 
+
+///////////////////DataBases///////////////////
 
 
 // global varaibles
@@ -50,13 +50,13 @@ const userDB = {
 };
 
 
+///////////////////GLOBAL FUNCTIONS///////////////////
 
-// global functions
+
 function randomString(length, chars) {
   let result = '';
   for (let i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
   return result;
-  // const result = Math.random().toString().substr(length,length); // creates a random number of 6
 }
 
 // search for a id/email inside DataBase - result is going to be undefined if does not find what it is looking for!
@@ -65,9 +65,7 @@ function tracker(newElem) {
   for (let user in userDB) {
     if (userDB[user].email === newElem) {
       result = user;
-      console.log('user analized: ',user);
     }
-    console.log('result is tracker: ', result);
   }
   return result;
 }
@@ -81,7 +79,6 @@ function findShortUrl(id) {
     }
   }
   return result;
-  console.log('result findShortUrl: ',result);
 }
 
 function urlsForUser(DataBase,userId) {
@@ -91,7 +88,6 @@ function urlsForUser(DataBase,userId) {
       urlsOfUser[shortUrl] = urlDB[shortUrl];
     }
   }
-  console.log('obj with the users',urlsOfUser);
   return urlsOfUser;
 }
 
@@ -101,14 +97,13 @@ function hasher(password) {
 };
 
 
+///////////////////ROUTER///////////////////
 
 
 // requests
 app.get('/', (req, res) => {
   const userId = req.session.user_id;
   const userEmail = req.session.user_email;
-  console.log('userId: ', userId);
-  console.log('type of userId: ', typeof(userId));
   if (typeof(userId) === 'undefined') {
     res.redirect('/login');
   } else {
@@ -117,27 +112,21 @@ app.get('/', (req, res) => {
 });
 
 
-// render JSON
-app.get('/urls.json', (req, res) => {
-  res.json(urlDB);
-});
+// // render JSON
+// app.get('/urls.json', (req, res) => {
+//   res.json(urlDB);
+// });
 
 
 // generating main page urls
 app.get('/urls', (req, res, next) => {
   const userId = req.session.user_id;
   const userEmail = req.session.user_email;
-  console.log('userId: ', userId);
-  console.log('type of userId: ', typeof(userId));
-  if (typeof(userId) === 'undefined') {
+  if (userId === undefined) {
     // res.redirect('/login');
-    const error = new Error('You are not connected! Go to login first!');
-    error.httpStatusCode = 401;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.status(401).send('You are not logged in!');
   } else {
     const shortURL = findShortUrl(req.session.user_id);
-    console.log('shorturl of the user',shortURL);
     const templateVars = {
       'urls': urlsForUser(urlDB,userId),
       'user_id': userId,
@@ -154,6 +143,7 @@ app.post('/urls', (req, res) => {
   urlDB[newTinyUrl] = { 'longURL': req.body.longURL, 'userID': req.session.user_id}; // creating a new key in urlData and storing the long url info
   res.redirect(`/urls/${newTinyUrl}`);
 });
+
 
 // create a new tiny url!
 app.get('/urls/new', (req, res) => {
@@ -176,10 +166,7 @@ app.get('/urls/:shortURL', (req, res, next) => {
   const shortURL = req.params.shortURL; // req.params. its a given property you can acess
   if (!urlDB[shortURL]) {
     // if that tiny url does not exist in the database
-    const error = new Error('TinyUrl does not exist!');
-    error.httpStatusCode = 400;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.status(400).send('TinyUrl does not exist!');
   } else if (user_id === urlDB[shortURL].userID) {
     // if the user is logged in and the url belongs to it
     const templateVars = { shortURL: req.params.shortURL, //then req.params.shortURL === b2xVn2
@@ -189,30 +176,23 @@ app.get('/urls/:shortURL', (req, res, next) => {
                         };
     res.render('urls_show', templateVars);
   } else if (!user_id) { // if user is not loggedin
-    const error = new Error('User is not loggedin!');
-    error.httpStatusCode = 401;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
-    } else {    // if that tiny url exist in the database, but does not belong to the user
-    const error = new Error('TinyUrl does not belong to you!');
-    error.httpStatusCode = 401;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.status(401).send('User is not loggedin!');
+  } else {    // if that tiny url exist in the database, but does not belong to the user
+    res.status(401).send('TinyUrl does not belong to you!');
   }
 });
+
 
 //redirecting short urls
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longUrl = urlDB[shortURL].longURL;
   if (shortURL === 'undefined') {
-    const error = new Error('Page does not exist!');
-    error.httpStatusCode = 400;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.status(400).send('TinyUrl does not belong to you!');
   }
   res.redirect(longUrl);
 });
+
 
 //delete TinyUrl and redirecting to new index page
 app.post('/urls/:shortURL/delete', (req, res) => {
@@ -227,7 +207,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 });
 
 //update longURL and redirecting to new index page
-app.post('/urls/:shortURL/edit', (req, res) => {
+app.post('/urls/:shortURL', (req, res) => {
   const tinyUrl = req.params.shortURL;
   const newlongURL = req.body.newURL;
   const userId = req.session.user_id;
@@ -246,48 +226,50 @@ app.get('/login', (req, res, next) => {
   res.render('urls_login');
 });
 
+
 //log in
 app.post('/login', (req, res, next) => {
-  const userEmail = req.body.user_email;
-  const password = req.body.password;
-  const userId = tracker(userEmail,'email');
-  const hashedPassword = userDB[userId]['password'];
+  if ((req.session.user_id) === undefined) {
 
-  if (tracker(userEmail,'email') === undefined) {
-    const error = new Error('id does not exist!');
-    error.httpStatusCode = 403;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
-  } else if (bcrypt.compareSync(password, hashedPassword)) {
-    console.log('Cookies :  ', req.session);
+    const userEmail = req.body.user_email;
+    const password = req.body.password;
+    const userId = tracker(userEmail);
+    const hashedPassword = userDB[userId]['password'];
+
+    if (tracker(userEmail) === undefined) {
+      res.status(403).send('id does not exist!');
+    } else if (bcrypt.compareSync(password, hashedPassword)) {
+      req.session.user_id = userId;
+      req.session.user_email = userEmail;
+      res.redirect('/urls');
+    } else {
+      res.status(403).send('password does not match!');
+    }
     req.session.user_id = userId;
-    req.session.user_email = userEmail;
+    req.session.user_email = userDB.idNum.email;
     res.redirect('/urls');
   } else {
-    const error = new Error('password does not match!');
-    error.httpStatusCode = 403;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.redirect('/urls');
   }
-  req.session.user_id = userId;
-  req.session.user_email = userDB.idNum.email;
-  res.redirect('/urls');
-});
+  });
+
 
 //log out
 app.post('/logout', (req, res) => {
   req.session = null
-  console.log('Cookies :  ', req.session);
   res.redirect('/urls');
 });
 
+
 //register page!
 app.get('/register', (req, res) => {
-  const templateVars = { user_id: req.session.user_id,
-    user_email: req.session.user_email // you are only passing that variable because you need to show it in your page. The cookie exists independently of that variable!
- };
-  res.render('urls_register', templateVars);
+  if ((req.session.user_id) === undefined) {
+    res.render('urls_register');
+  } else {
+    res.redirect('/urls');
+  }
 });
+
 
 //registering!
 app.post('/register', (req, res, next) => {
@@ -298,30 +280,17 @@ app.post('/register', (req, res, next) => {
   const userId = {'id': idNum, 'email': email, 'password': hashedPassword};
 
   if (!email) {
-    const error = new Error('missing id');
-    error.httpStatusCode = 400;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.status(400).send('missing id');
   } else if (!password) {
-    const error = new Error('missing id');
-    error.httpStatusCode = 400;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.status(400).send('missing password');
   } else if (tracker(email,'email') !== undefined) {
-    let error = new Error('Email already registered!');
-    error.httpStatusCode = 400;
-    return next(error);
-    res.sendStatus(err.httpStatusCode).json(err);
+    res.status(400).send('Email already registered');
   } else {
-
-  userDB.idNum = userId;
-  // cookieParser.JSONCookie(id);
-  console.log('Cookies after creating cookie id: ', req.session);
-
-  req.session.user_id = userDB.idNum.id;
-  req.session.user_email = userDB.idNum.email;
-  res.redirect('/urls');
-}
+    userDB.idNum = userId;
+    req.session.user_id = userDB.idNum.id;
+    req.session.user_email = userDB.idNum.email;
+    res.redirect('/urls');
+  }
 });
 
 // just listening
