@@ -33,12 +33,12 @@ const userDB = {
   'userRandomID': {
     id: 'userRandomID',
     email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
+    password: '$2b$10$I6TVOGpd/d9MSAHpCI5nRu3wgHC60czt895MCNC3x65KKXHFSTL5u' // purple-monkey-dinosaur
   },
  'user2RandomID': {
     id: 'user2RandomID',
     email: 'user2@example.com',
-    password: 'dishwasher-funk'
+    password: '$2b$10$l6sDxe8PbxLEz7j2b.I2YuY8nO6S1.g5dMDhnCyMwi/odCOP2T5LG' // dishwasher-funk
   }
 };
 
@@ -88,6 +88,10 @@ function urlsForUser(DataBase,userId) {
   return urlsOfUser;
 }
 
+function hasher(password) {
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  return hashedPassword;
+};
 
 
 
@@ -213,13 +217,18 @@ app.post('/login', (req, res, next) => {
   const userEmail = req.body.user_email;
   const password = req.body.password;
   const userId = tracker(userEmail,'email');
+  const hashedPassword = userDB[userId]['password'];
+  // res.cookie('hashed password', hashedPassword);
+  // res.cookie('password', password);
+  // res.cookie('has password', hasher(password));
+
 
   if (tracker(userEmail,'email') === undefined) {
     const error = new Error('id does not exist!');
     error.httpStatusCode = 403;
     return next(error);
     res.sendStatus(err.httpStatusCode).json(err);
-  } else if (password === userDB[userId].password) {
+  } else if (bcrypt.compareSync(password, hashedPassword)) {
     console.log('Cookies :  ', req.cookies);
     res.cookie('user_id', userId);
     res.cookie('user_email', userEmail);
@@ -255,8 +264,9 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = hasher(password);
   const idNum = (randomString(6, '0123456789').toString());
-  const userId = {'id': idNum, 'email': email, 'password': password};
+  const userId = {'id': idNum, 'email': email, 'password': hashedPassword};
 
   if (!email) {
     const error = new Error('missing id');
