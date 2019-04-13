@@ -180,9 +180,9 @@ app.get('/urls/:shortURL', (req, res, next) => {
 
 //redirecting short urls
 app.get('/u/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longUrl = urlDB[shortURL].longURL;
-  if (shortURL === 'undefined') {
+  const shortUrl = req.params.shortURL;
+  const longUrl = urlDB[shortUrl].longURL;
+  if (shortUrl === 'undefined') {
     res.status(400).send('TinyUrl does not exist!');
   }
   res.redirect(longUrl);
