@@ -22,6 +22,8 @@
 - Install all dependencies (using the `npm install` command).
 - Run the development web server using the `node express_server.js` command
 
+## Screenshots
+
 !['Screenshot of Login Page'](https://github.com/Lzduque/tiny-app/blob/master/docs/login.png?raw=true)
 
 !['Screenshot of Register Page'](https://github.com/Lzduque/tiny-app/blob/master/docs/register.png?raw=true)
