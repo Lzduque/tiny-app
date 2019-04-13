@@ -26,7 +26,7 @@ app.use(function(req, res, next) {
 app.set('view engine', 'ejs'); //
 
 
-///////////////////DataBases///////////////////
+//////////////////////////DataBases//////////////////////////
 
 
 // global varaibles
@@ -51,7 +51,7 @@ const userDB = {
 };
 
 
-///////////////////GLOBAL FUNCTIONS///////////////////
+//////////////////////////GLOBAL FUNCTIONS//////////////////////////
 
 
 function randomString(length, chars) {
@@ -98,7 +98,7 @@ function hasher(password) {
 }
 
 
-///////////////////ROUTER///////////////////
+//////////////////////////ROUTER//////////////////////////
 
 
 // requests
@@ -181,10 +181,10 @@ app.get('/urls/:shortURL', (req, res, next) => {
 //redirecting short urls
 app.get('/u/:shortURL', (req, res) => {
   const shortUrl = req.params.shortURL;
-  const longUrl = urlDB[shortUrl].longURL;
-  if (shortUrl === 'undefined') {
+  if (!urlDB.hasOwnProperty(shortUrl)) {
     res.status(400).send('TinyUrl does not exist!');
   }
+  const longUrl = urlDB[shortUrl].longURL;
   res.redirect(longUrl);
 });
 
