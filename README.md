@@ -23,7 +23,11 @@
 - Run the development web server using the `node express_server.js` command
 
 !['Screenshot of Login Page'](https://github.com/Lzduque/tiny-app/blob/master/docs/login.png?raw=true)
+
 !['Screenshot of Register Page'](https://github.com/Lzduque/tiny-app/blob/master/docs/register.png?raw=true)
+
 !['Screenshot of URLs Index Page'](https://github.com/Lzduque/tiny-app/blob/master/docs/urls_index.png?raw=true)
+
 !['Screenshot of URLs Create New Page'](https://github.com/Lzduque/tiny-app/blob/master/docs/urls_new.png?raw=true)
+
 !['Screenshot of TinyURL Page'](https://github.com/Lzduque/tiny-app/blob/master/docs/urls_show.png?raw=true)
