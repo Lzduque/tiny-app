@@ -32,9 +32,6 @@ app.set('view engine', 'ejs'); //
 // global varaibles
 const urlDB = {
   'b6UJxQ': { longURL: 'https://www.tsn.ca', userID: 'userRandomID' },
-  'rhUTuT': { longURL: 'https://www.hotmail.ca', userID: 'userRandomID' },
-  'a5BoGr': { longURL: 'https://www.google.ca', userID: 'user2RandomID' },
-  'i3erGr': { longURL: 'https://www.google.com', userID: 'user2RandomID' }
 };
 
 const userDB = {
@@ -42,11 +39,6 @@ const userDB = {
     id: 'userRandomID',
     email: 'user@example.com',
     password: '$2b$10$I6TVOGpd/d9MSAHpCI5nRu3wgHC60czt895MCNC3x65KKXHFSTL5u' // purple-monkey-dinosaur
-  },
- 'user2RandomID': {
-    id: 'user2RandomID',
-    email: 'user2@example.com',
-    password: '$2b$10$l6sDxe8PbxLEz7j2b.I2YuY8nO6S1.g5dMDhnCyMwi/odCOP2T5LG' // dishwasher-funk
   }
 };
 
@@ -68,7 +60,6 @@ function findUser(email) {
     }
   }
   return result;
-  console.log('result of findUser: ', result);
 }
 
 function findEmail(userId) {
@@ -79,7 +70,6 @@ function findEmail(userId) {
     }
   }
   return result;
-  console.log('result of findEmail: ', result);
 }
 
 function findShortUrl(id) {
@@ -90,7 +80,6 @@ function findShortUrl(id) {
     }
   }
   return result;
-  console.log('result of findShortUrl: ', result);
 }
 
 function urlsForUser(DataBase,userId) {
@@ -101,7 +90,6 @@ function urlsForUser(DataBase,userId) {
     }
   }
   return urlsOfUser;
-  console.log('result of urlsForUser: ', result);
 }
 
 function hasher(password) {
@@ -195,7 +183,7 @@ app.get('/urls/:shortURL', (req, res, next) => {
 //redirecting short urls
 app.get('/u/:shortURL', (req, res) => {
   if (!urlDB.hasOwnProperty(req.params.shortURL)) {
-    res.status(400).send('TinyUrl does not exist!');
+    return res.status(400).send('TinyUrl does not exist!');
   }
 
   const longUrl = urlDB[req.params.shortURL].longURL;

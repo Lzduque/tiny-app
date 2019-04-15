@@ -1,1 +1,6 @@
 node_modules
+bcrypt-test.js
+emailTracker-test.js
+idTracker-test.js
+randomNUm.js
+test.js
