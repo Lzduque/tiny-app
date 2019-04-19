@@ -23,24 +23,16 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.set('view engine', 'ejs')
+app.set('view engine', 'ejs');
 
 
 //////////////////////////DataBases//////////////////////////
 
 
 // global varaibles
-const urlDB = {
-  'b6UJxQ': { longURL: 'https://www.tsn.ca', userID: 'userRandomID' },
-};
+const urlDB = {};
 
-const userDB = {
-  'userRandomID': {
-    id: 'userRandomID',
-    email: 'user@example.com',
-    password: '$2b$10$I6TVOGpd/d9MSAHpCI5nRu3wgHC60czt895MCNC3x65KKXHFSTL5u' // purple-monkey-dinosaur
-  }
-};
+const userDB = {};
 
 
 //////////////////////////GLOBAL FUNCTIONS//////////////////////////
