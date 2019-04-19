@@ -1,14 +1,14 @@
 // Whole-script strict mode syntax
 'use strict';
 
-const express = require('express'); //
-const cookieSession = require('cookie-session');
-const app = express(); //
-const PORT = 8080; // default port 8080
-const bodyParser = require('body-parser'); // to make the post method work!
-const bcrypt = require('bcrypt'); // to encrypt code
+const express         = require('express');
+const cookieSession   = require('cookie-session');
+const app             = express();
+const PORT            = 8080; // default port 8080
+const bodyParser      = require('body-parser'); // to make the post method work!
+const bcrypt          = require('bcrypt'); // to encrypt code
 
-app.use(bodyParser.urlencoded({extended: true})); //
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['You should be fine'],
@@ -23,7 +23,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.set('view engine', 'ejs'); //
+app.set('view engine', 'ejs')
 
 
 //////////////////////////DataBases//////////////////////////
@@ -133,7 +133,16 @@ app.get('/urls', (req, res, next) => {
 //posting the form and redirecting to new url
 app.post('/urls', (req, res) => {
   const newTinyUrl = randomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-  urlDB[newTinyUrl] = { 'longURL': req.body.longURL,
+
+  let longUrl;
+
+  if (req.body.longURL.startsWith("http://")) {
+    longUrl = req.body.longURL;
+  } else {
+    longUrl = 'http://' + req.body.longURL;
+  }
+
+  urlDB[newTinyUrl] = { 'longURL': longUrl,
                         'userID': req.session.user_id};
 
   res.redirect(`/urls/${newTinyUrl}`);
@@ -182,6 +191,7 @@ app.get('/urls/:shortURL', (req, res, next) => {
 
 //redirecting short urls
 app.get('/u/:shortURL', (req, res) => {
+  console.log(urlDB);
   if (!urlDB.hasOwnProperty(req.params.shortURL)) {
     return res.status(400).send('TinyUrl does not exist!');
   }
