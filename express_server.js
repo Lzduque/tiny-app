@@ -130,6 +130,8 @@ app.post('/urls', (req, res) => {
 
   if (req.body.longURL.startsWith("http://")) {
     longUrl = req.body.longURL;
+  } else if (req.body.longURL.startsWith("https://")) {
+    longUrl = req.body.longURL;
   } else {
     longUrl = 'http://' + req.body.longURL;
   }
