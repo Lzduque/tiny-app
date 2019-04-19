@@ -48,7 +48,7 @@ function findUser(email) {
   let result;
   for (let user in userDB) {
     if (userDB[user].email === email) {
-      result = user;
+      result = userDB[user];
     }
   }
   return result;
@@ -239,10 +239,10 @@ app.get('/login', (req, res, next) => {
 //log in and send the form
 app.post('/login', (req, res, next) => {
 
-  const userId = findUser(req.body.user_email);
+  const user = findUser(req.body.user_email);
 
-  if (userId && bcrypt.compareSync(req.body.password, userDB[userId].password)) {
-    req.session.user_id = userId;
+  if (user && bcrypt.compareSync(req.body.password, user.password)) {
+    req.session.user_id = user.id;
     res.redirect('/urls');
   } else {
     res.status(403).send('The email address or password you entered is not valid.');
@@ -252,7 +252,7 @@ app.post('/login', (req, res, next) => {
 
 //log out
 app.post('/logout', (req, res) => {
-  req.session = null
+  req.session = null;
   res.redirect('/urls');
 });
 
