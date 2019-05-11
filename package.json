@@ -6,6 +6,9 @@
     "start": "./node_modules/.bin/nodemon -L express_server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "engines": {
+    "node": "8.9.4"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Lzduque/tiny-app.git"

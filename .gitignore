@@ -4,3 +4,6 @@ emailTracker-test.js
 idTracker-test.js
 randomNUm.js
 test.js
+npm-debug.log
+.DS_Store
+/*.env
