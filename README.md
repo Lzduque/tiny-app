@@ -5,8 +5,8 @@
 
 ## Final Product
 
-- Allows the user to store the URLs and its shorten URLs, update them and delete them;
-- Also the URLS pages and its functionalitys are only accessyble to the user that created them;
+- Allows the user to store the URLs and shorten, update and delete the URLs,
+- Also the URLS pages and its functionalities are only accessible to the user that created them,
 
 ## Dependencies
 
